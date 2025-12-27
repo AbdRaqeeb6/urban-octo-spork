@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login | Budget App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #2563eb, #16a34a);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: white;
+      width: 100%;
+      max-width: 380px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
+
+    .msg {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+      display: none;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>Login</h2>
+
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+
+    <button onclick="login()">Login</button>
+
+    <div id="error" class="msg error"></div>
+  </div>
+
+  <script>
+    async function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const errorDiv = document.getElementById("error");
+
+      errorDiv.style.display = "none";
+
+      if (!email || !password) {
+        errorDiv.innerText = "Email and password are required";
+        errorDiv.style.display = "block";
+        return;
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password
+          })
+        });
+
+        const text = await response.text();
+
+        if (response.ok) {
+          const data = JSON.parse(text);
+          localStorage.setItem("token", data.access_token);
+          window.location.href = "http://127.0.0.1:8000/dashboard";
+        } else {
+          errorDiv.innerText = text;
+          errorDiv.style.display = "block";
+        }
+      } catch (err) {
+        errorDiv.innerText = err.toString();
+        errorDiv.style.display = "block";
+      }
+    }
+  </script>
+</body>
+</html>
+

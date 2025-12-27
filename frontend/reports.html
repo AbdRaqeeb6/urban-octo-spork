@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reports | BudgetPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg,#eef2ff,#f8fafc);
+}
+
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 320px;
+  background: linear-gradient(180deg,#0f172a,#1e3a8a);
+  color: white;
+  padding: 24px;
+}
+
+.sidebar h2 { margin-bottom: 40px; }
+
+.sidebar a {
+  display: flex;
+  gap: 14px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  color: #e5e7eb;
+  text-decoration: none;
+  border-radius: 16px;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background: rgba(255,255,255,0.15);
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  padding: 40px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.export button {
+  margin-left: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.csv { background:#22c55e;color:white; }
+.pdf { background:#ef4444;color:white; }
+.word { background:#2563eb;color:white; }
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 28px;
+}
+
+.card {
+  background: white;
+  padding: 26px;
+  border-radius: 22px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.1);
+}
+
+.card h3 {
+  margin-top: 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <aside class="sidebar">
+    <h2>💰 BudgetPro</h2>
+    <a href="/dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="/expenses"><i class="fa-solid fa-wallet"></i> Expenses</a>
+    <a href="/budget"><i class="fa-solid fa-piggy-bank"></i> Budget</a>
+    <a class="active" href="/reports"><i class="fa-solid fa-file-lines"></i> Reports</a>
+    <a href="/" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="header">
+      <h1>Financial Intelligence Reports</h1>
+      <div class="export">
+        <button class="csv" onclick="exportCSV()">⬇ CSV</button>
+        <button class="pdf" onclick="exportPDF()">⬇ PDF</button>
+        <button class="word" onclick="exportWord()">⬇ Word</button>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+        <h3>📈 Spending Trend</h3>
+        <canvas id="trendChart"></canvas>
+        <p>Shows how expenses evolve over time.</p>
+      </div>
+
+      <div class="card">
+        <h3>🍩 Expense Distribution</h3>
+        <canvas id="categoryChart"></canvas>
+        <p>Highlights dominant spending categories.</p>
+      </div>
+
+      <div class="card">
+        <h3>📊 Budget vs Expense</h3>
+        <canvas id="compareChart"></canvas>
+        <p>Reveals budget pressure.</p>
+      </div>
+
+      <div class="card">
+        <h3>🔥 Daily Burn Rate</h3>
+        <canvas id="burnChart"></canvas>
+        <p>Average daily consumption of budget.</p>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+let summaryData;
+
+function logout(){ localStorage.clear(); }
+
+async function loadReports(){
+  const r = await fetch("/net-balance");
+  summaryData = await r.json();
+
+  renderCharts(summaryData);
+}
+
+function renderCharts(d){
+
+  new Chart(trendChart,{
+    type:"line",
+    data:{
+      labels:["Week 1","Week 2","Week 3","Week 4"],
+      datasets:[{
+        label:"Spending",
+        data:[
+          d.total_expenses*0.2,
+          d.total_expenses*0.45,
+          d.total_expenses*0.7,
+          d.total_expenses
+        ],
+        borderColor:"#ef4444",
+        fill:false
+      }]
+    }
+  });
+
+  new Chart(categoryChart,{
+    type:"doughnut",
+    data:{
+      labels:["Food","Transport","Rent","Utilities","Other"],
+      datasets:[{
+        data:[30,20,25,15,10],
+        backgroundColor:["#22c55e","#3b82f6","#ef4444","#f59e0b","#a855f7"]
+      }]
+    }
+  });
+
+  new Chart(compareChart,{
+    type:"bar",
+    data:{
+      labels:["Budget","Expenses"],
+      datasets:[{
+        data:[d.total_income,d.total_expenses],
+        backgroundColor:["#22c55e","#ef4444"]
+      }]
+    }
+  });
+
+  new Chart(burnChart,{
+    type:"line",
+    data:{
+      labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+      datasets:[{
+        label:"Burn Rate",
+        data:Array(7).fill(d.total_expenses/7),
+        backgroundColor:"#2563eb",
+        fill:true
+      }]
+    }
+  });
+}
+
+/* EXPORTS */
+function exportCSV(){
+  const csv = `Metric,Value
+Budget,${summaryData.total_income}
+Expenses,${summaryData.total_expenses}
+Balance,${summaryData.net_balance}
+Utilisation,${summaryData.budget_utilisation}%`;
+  saveAs(new Blob([csv]),"budget-report.csv");
+}
+
+function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+  pdf.text("BudgetPro Financial Report",20,20);
+  pdf.text(`Budget: ${summaryData.total_income}`,20,40);
+  pdf.text(`Expenses: ${summaryData.total_expenses}`,20,50);
+  pdf.text(`Balance: ${summaryData.net_balance}`,20,60);
+  pdf.save("budget-report.pdf");
+}
+
+function exportWord(){
+  const doc = `
+  BudgetPro Financial Report
+  Budget: ${summaryData.total_income}
+  Expenses: ${summaryData.total_expenses}
+  Balance: ${summaryData.net_balance}
+  Utilisation: ${summaryData.budget_utilisation}%
+  `;
+  saveAs(new Blob([doc]),"budget-report.doc");
+}
+
+loadReports();
+</script>
+<script src="/frontend/sync.js"></script>
+
+</body>
+</html>

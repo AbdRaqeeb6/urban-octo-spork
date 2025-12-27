@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Budget | BudgetPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg,#eef2ff,#f8fafc);
+}
+
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 320px;
+  background: linear-gradient(180deg,#0f172a,#1e3a8a);
+  color: white;
+  padding: 24px;
+}
+
+.sidebar h2 {
+  margin-bottom: 40px;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  color: #e5e7eb;
+  text-decoration: none;
+  border-radius: 16px;
+  font-weight: 500;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background: rgba(255,255,255,0.15);
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  padding: 40px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+/* KPI GRID */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 26px;
+  margin-bottom: 36px;
+}
+
+.kpi {
+  color: white;
+  padding: 28px;
+  border-radius: 20px;
+  box-shadow: 0 22px 45px rgba(0,0,0,.15);
+  position: relative;
+}
+
+.kpi i {
+  font-size: 28px;
+  opacity: .9;
+}
+
+.kpi h4 {
+  margin: 14px 0 6px;
+  font-size: 14px;
+  opacity: .85;
+}
+
+.kpi h2 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.kpi small {
+  opacity: .8;
+}
+
+.kpi.green { background: linear-gradient(135deg,#16a34a,#22c55e); }
+.kpi.red   { background: linear-gradient(135deg,#dc2626,#ef4444); }
+.kpi.blue  { background: linear-gradient(135deg,#2563eb,#3b82f6); }
+
+/* ANALYTICS GRID */
+.analytics {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 30px;
+}
+
+/* CARD */
+.card {
+  background: white;
+  padding: 28px;
+  border-radius: 22px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.1);
+}
+
+/* PROGRESS BAR */
+.progress {
+  width: 100%;
+  height: 16px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 14px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg,#22c55e,#16a34a);
+  width: 0%;
+  transition: width .5s;
+}
+
+/* FORECAST */
+.forecast {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+}
+
+/* FORM */
+input, button {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+}
+
+button {
+  background: linear-gradient(135deg,#2563eb,#1d4ed8);
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <aside class="sidebar">
+    <h2>💰 BudgetPro</h2>
+    <a href="/dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a href="/expenses"><i class="fa-solid fa-wallet"></i> Expenses</a>
+    <a class="active" href="/budget"><i class="fa-solid fa-piggy-bank"></i> Budget</a>
+    <a href="/reports"><i class="fa-solid fa-file-lines"></i> Reports</a>
+    <a href="/" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  </aside>
+
+  <main class="main">
+
+    <div class="header">
+      <h1>Budget Intelligence</h1>
+      <input type="month" id="month">
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+
+      <div class="kpi green">
+        <i class="fa-solid fa-coins"></i>
+        <h4>Total Budget</h4>
+        <h2 id="budgetAmt">GHS 0</h2>
+        <small>Monthly allocation</small>
+      </div>
+
+      <div class="kpi red">
+        <i class="fa-solid fa-arrow-trend-down"></i>
+        <h4>Spent</h4>
+        <h2 id="spentAmt">GHS 0</h2>
+        <small>Outflow so far</small>
+      </div>
+
+      <div class="kpi blue">
+        <i class="fa-solid fa-scale-balanced"></i>
+        <h4>Remaining</h4>
+        <h2 id="remainAmt">GHS 0</h2>
+        <small>Available balance</small>
+      </div>
+
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="analytics">
+
+      <div class="card">
+        <h3>Budget Utilisation</h3>
+        <p id="utilText">0% used</p>
+        <div class="progress">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+
+        <div id="forecast" class="forecast" style="display:none"></div>
+      </div>
+
+      <div class="card">
+        <h3>Budget vs Spending</h3>
+        <canvas id="budgetChart"></canvas>
+      </div>
+
+    </div>
+
+    <div class="card" style="max-width:420px;margin-top:36px">
+      <h3>Set / Update Budget</h3>
+      <input id="amount" type="number" placeholder="Amount (GHS)">
+      <button onclick="saveBudget()">Save Budget</button>
+    </div>
+
+  </main>
+</div>
+
+<script>
+let chart;
+
+function logout(){ localStorage.clear(); }
+
+function currentMonth(){
+  return new Date().toISOString().slice(0,7);
+}
+month.value = currentMonth();
+
+async function saveBudget() {
+  await fetch("/budget", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      month: month.value,
+      amount: Number(amount.value)
+    })
+  });
+
+  refreshAll(); // 🔥 THIS IS THE SYNC
+}
+
+
+async function loadBudget(){
+  const r = await fetch("/net-balance");
+  const d = await r.json();
+
+  budgetAmt.innerText = `GHS ${d.total_income}`;
+  spentAmt.innerText  = `GHS ${d.total_expenses}`;
+  remainAmt.innerText = `GHS ${d.net_balance}`;
+
+  utilText.innerText = `${d.budget_utilisation}% used`;
+  progressBar.style.width = d.budget_utilisation + "%";
+
+  if(d.budget_utilisation > 80){
+    forecast.style.display = "block";
+    forecast.innerHTML =
+      `⚠️ At this pace, you will exceed budget in <b>${d.forecast_days} days</b>.`;
+  } else {
+    forecast.style.display = "none";
+  }
+
+  renderChart(d.total_income, d.total_expenses);
+}
+
+function renderChart(budget, spent){
+  if(chart) chart.destroy();
+  chart = new Chart(budgetChart,{
+    type:"doughnut",
+    data:{
+      labels:["Remaining","Spent"],
+      datasets:[{
+        data:[budget-spent, spent],
+        backgroundColor:["#22c55e","#ef4444"]
+      }]
+    },
+    options:{ plugins:{ legend:{ position:"bottom" } } }
+  });
+}
+
+loadBudget();
+</script>
+<script src="/frontend/sync.js"></script>
+
+</body>
+</html>
+

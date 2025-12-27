@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expenses | BudgetPro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg,#eef2ff,#f8fafc);
+}
+
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 300px;
+  background: linear-gradient(180deg,#0f172a,#1e3a8a);
+  color: white;
+  padding: 24px;
+}
+
+.sidebar h2 {
+  margin-bottom: 40px;
+}
+
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  color: #e5e7eb;
+  text-decoration: none;
+  border-radius: 14px;
+  font-weight: 500;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background: rgba(255,255,255,0.15);
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  padding: 36px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.header h1 {
+  margin: 0;
+}
+
+.nav-buttons button {
+  margin-left: 10px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.dashboard-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.budget-btn {
+  background: #16a34a;
+  color: white;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.card {
+  background: white;
+  padding: 26px;
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+/* FORM */
+input, select, button {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+}
+
+.add-btn {
+  background: linear-gradient(135deg,#ef4444,#dc2626);
+  color: white;
+  font-weight: 600;
+  border: none;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* FEEDBACK */
+.success {
+  color: #16a34a;
+  font-weight: 600;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2>💰 BudgetPro</h2>
+    <a href="/dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+    <a class="active" href="/expenses"><i class="fa-solid fa-wallet"></i> Expenses</a>
+    <a href="/budget"><i class="fa-solid fa-piggy-bank"></i> Budget</a>
+    <a href="/reports"><i class="fa-solid fa-file-lines"></i> Reports</a>
+    <a href="/" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="header">
+      <h1>Expenses</h1>
+      <div class="nav-buttons">
+        <button class="dashboard-btn" onclick="goDashboard()">⬅ Dashboard</button>
+        <button class="budget-btn" onclick="goBudget()">📊 Budget</button>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <!-- ADD EXPENSE -->
+      <div class="card">
+        <h3>Add Expense</h3>
+
+        <input id="desc" placeholder="Description">
+        <select id="cat">
+          <option>Food</option>
+          <option>Transport</option>
+          <option>Rent</option>
+          <option>Utilities</option>
+          <option>Other</option>
+        </select>
+        <input id="amount" type="number" placeholder="Amount (GHS)">
+        <input id="date" type="date">
+        <button class="add-btn" onclick="addExpense()">➕ Add Expense</button>
+
+        <p id="msg"></p>
+      </div>
+
+      <!-- CATEGORY TOTALS -->
+      <div class="card">
+        <h3>Expenses by Category</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th align="right">Total (GHS)</th>
+            </tr>
+          </thead>
+          <tbody id="list"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+async function addExpense() {
+  const res = await fetch("/expenses", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      description: desc.value,
+      category: cat.value,
+      amount: Number(amount.value),
+      date: date.value
+    })
+  });
+
+  if (!res.ok) {
+    alert("❌ Failed to add expense");
+    return;
+  }
+
+  desc.value = "";
+  amount.value = "";
+
+  await loadExpenses();  // refresh category table
+  refreshAll();          // refresh dashboard + reports
+}
+
+
+  desc.value = "";
+  amount.value = "";
+
+  refreshAll(); // 🔥 THIS IS THE SYNC
+}
+
+
+  msg.innerHTML = "✅ Expense added & synced";
+  msg.className = "success";
+
+  desc.value = "";
+  amount.value = "";
+
+  loadExpenses();
+}
+
+async function loadExpenses() {
+  const r = await fetch("/expenses-by-category");
+  const d = await r.json();
+
+  list.innerHTML = "";
+  d.forEach(x => {
+    list.innerHTML += `
+      <tr>
+        <td>${x.category}</td>
+        <td align="right">${x.total}</td>
+      </tr>
+    `;
+  });
+}
+
+function goDashboard() {
+  window.location.href = "/dashboard";
+}
+
+function goBudget() {
+  window.location.href = "/budget";
+}
+
+function logout() {
+  localStorage.clear();
+}
+
+loadExpenses();
+</script>
+<script src="/frontend/sync.js"></script>
+
+</body>
+</html>

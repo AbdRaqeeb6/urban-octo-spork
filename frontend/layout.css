@@ -1,0 +1,119 @@
+/* ========== GLOBAL ========== */
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background-color: #f4f6f9;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* ========== SIDEBAR ========== */
+.sidebar {
+  height: 100vh;
+  background: linear-gradient(180deg, #1e3c72, #2a5298);
+  color: #fff;
+  padding: 24px 18px;
+}
+
+.sidebar h4 {
+  margin-bottom: 28px;
+  font-weight: 600;
+}
+
+.sidebar a,
+.sidebar button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #e9ecef;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.sidebar a:hover,
+.sidebar a.active,
+.sidebar button:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+/* ========== MAIN CONTENT ========== */
+.content {
+  background: linear-gradient(180deg, #f8f9fc 0%, #eef1f7 100%);
+  min-height: 100vh;
+  padding: 32px;
+  transition: background 0.3s;
+}
+
+/* ========== KPI CARDS ========== */
+.kpi-card {
+  border-radius: 18px;
+  min-height: 120px;
+  overflow: hidden;
+}
+
+.kpi-card .card-body {
+  padding: 22px;
+}
+
+.kpi-income {
+  background: linear-gradient(135deg, #1cc88a, #17a673);
+}
+
+.kpi-expense {
+  background: linear-gradient(135deg, #e74a3b, #c0392b);
+}
+
+.kpi-balance {
+  background: linear-gradient(135deg, #4e73df, #224abe);
+}
+
+.kpi-icon {
+  font-size: 3.2rem;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ========== CARDS ========== */
+.card {
+  border-radius: 16px;
+  border: none;
+}
+
+/* ================= DARK MODE ================= */
+body.dark {
+  background-color: #0f1115;
+  color: #e6e6e6;
+}
+
+body.dark .content {
+  background: linear-gradient(180deg, #16181d 0%, #0f1115 100%);
+}
+
+body.dark .card {
+  background-color: #1b1f27;
+  color: #e6e6e6;
+}
+
+body.dark .sidebar {
+  background: linear-gradient(180deg, #0f2027, #203a43);
+}
+
+body.dark input,
+body.dark select {
+  background-color: #262a33;
+  border-color: #444;
+  color: #fff;
+}
+
+body.dark input::placeholder {
+  color: #aaa;
+}
+
+body.dark .progress {
+  background-color: #262a33;
+}

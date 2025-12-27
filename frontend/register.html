@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Register | Budget App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #16a34a, #2563eb);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: white;
+      width: 100%;
+      max-width: 400px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
+
+    .msg {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+      display: none;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>Create Account</h2>
+
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+
+    <button onclick="register()">Register</button>
+
+    <div id="success" class="msg success"></div>
+    <div id="error" class="msg error"></div>
+  </div>
+
+  <script>
+    async function register() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      const successDiv = document.getElementById("success");
+      const errorDiv = document.getElementById("error");
+
+      successDiv.style.display = "none";
+      errorDiv.style.display = "none";
+
+      if (!email || !password) {
+        errorDiv.innerText = "Email and password are required";
+        errorDiv.style.display = "block";
+        return;
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password
+          })
+        });
+
+        const text = await response.text();
+
+        if (response.ok) {
+          successDiv.innerText = "Registration successful! Redirecting to login…";
+          successDiv.style.display = "block";
+          setTimeout(() => {
+            window.location.href = "http://127.0.0.1:8000/";
+          }, 1500);
+        } else {
+          errorDiv.innerText = text;
+          errorDiv.style.display = "block";
+        }
+      } catch (err) {
+        errorDiv.innerText = err.toString();
+        errorDiv.style.display = "block";
+      }
+    }
+  </script>
+</body>
+</html>
+
