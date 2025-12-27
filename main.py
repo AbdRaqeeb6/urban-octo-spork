@@ -6,8 +6,10 @@ from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from pydantic import BaseModel
 from datetime import date
 
+
 # ---------------- APP ----------------
 app = FastAPI()
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 # ---------------- DATABASE ----------------
 DATABASE_URL = "sqlite:///./budget.db"
