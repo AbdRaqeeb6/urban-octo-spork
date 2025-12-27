@@ -1,6 +1,7 @@
 alert("app.js loaded successfully");
 
-const API = "http://127.0.0.1:8000";
+const API = window.location.origin;
+
 
 /* ================= AUTH ================= */
 function authHeaders() {

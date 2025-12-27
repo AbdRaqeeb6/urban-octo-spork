@@ -103,7 +103,7 @@
       }
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/register", {
+        const response = await fetch("window.location.origin", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -120,7 +120,7 @@
           successDiv.innerText = "Registration successful! Redirecting to login…";
           successDiv.style.display = "block";
           setTimeout(() => {
-            window.location.href = "http://127.0.0.1:8000/";
+            window.location.href = "window.location.origin";
           }, 1500);
         } else {
           errorDiv.innerText = text;
